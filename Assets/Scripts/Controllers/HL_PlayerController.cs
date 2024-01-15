@@ -12,15 +12,23 @@ public enum EPlayerMoveState
     STATE_PRONE,
     MOVE_STATE_FORCE_DWORD,
 }
+
 public class HL_PlayerController : MonoBehaviour
 {
-
+    HL_KeyState KeyStates;
     Transform camFirstPerson;
     Transform camThirdPerson;
+
     EPlayerMoveState moveState = EPlayerMoveState.STATE_IDLE;
     EPlayerMoveState moveStateLast = EPlayerMoveState.STATE_IDLE;
     EPlayerMoveState moveStateBeforeJump = EPlayerMoveState.STATE_RUN;
 
+    float flCurrentPlayerSpeed = 0.0f;
+
+    Vector3 vecMouseMoveDelta = Vector3.zero;
+    Vector3 vecKeyboardMoveDelta = Vector3.zero;
+
+    Vector3 vecViewAngles = Vector3.zero;
     float GetPlayerMoveSpeedModifier()
     {
         switch (moveState)
@@ -49,36 +57,62 @@ public class HL_PlayerController : MonoBehaviour
 
             return flSpeedModifier * MaxPlayerSpeed;
     }
+    public static void ClampAngles(ref Vector3 vecAngles)
+    {
+        if (vecAngles.x > 89.0f)
+            vecAngles.x = 89.0f;
+        else if (vecAngles.x < -89.0f)
+            vecAngles.x = -89.0f;
 
+        if (vecAngles.y > 180.0f)
+            vecAngles.y = 180.0f;
+        else if (vecAngles.y < -180.0f)
+            vecAngles.y = -180.0f;
+
+    }
+    public static void NormalizeAngles(ref Vector3 vecAngles)
+    {
+        if (vecAngles.x > 180.0f)
+            vecAngles.x = -180.0f;
+        else if (vecAngles.x < -180.0f)
+            vecAngles.x = 180.0f;
+
+        if (vecAngles.y > 180.0f)
+            vecAngles.y = -180.0f;
+        else if (vecAngles.y < -180.0f)
+            vecAngles.y = 180.0f;
+       
+    }
+
+    bool bSprintingKeyState = false;
+    bool bCrouchingKeyState = false;
+    void UpdateMoveState()
+    {
+        bSprintingKeyState = KeyStates.CheckKeyState(KeyCode.LeftShift, EKeyQueryMode.KEYQUERY_TOGGLE);
+        bCrouchingKeyState = KeyStates.CheckKeyState(KeyCode.LeftControl, EKeyQueryMode.KEYQUERY_TOGGLE);
+    }
     void Start()
     {
+        KeyStates = this.gameObject.GetComponent<HL_KeyState>();
         camFirstPerson = transform.Find("FirstPersonCamera");
         camThirdPerson = transform.Find("ThirdPersonCamera");
     }
-
-
     void Update()
     {
+        vecMouseMoveDelta.x = Input.GetAxis("Mouse X");
+        vecMouseMoveDelta.y = Input.GetAxis("Mouse Y");
 
-        float flMouseX = Input.GetAxis("Mouse X");
-        float flMouseY = Input.GetAxis("Mouse Y");
+        vecKeyboardMoveDelta.y = Input.GetAxis("Horizontal");
+        vecKeyboardMoveDelta.x = Input.GetAxis("Vertical");
+       
+        vecViewAngles.x -= vecMouseMoveDelta.y * 1.0f;
+        vecViewAngles.y -= vecMouseMoveDelta.x * 1.0f;
 
-        if (flMouseY != 0.0f)
-        {
-            if (flMouseY < 0.0f)
-                camFirstPerson.transform.Rotate(Vector3.right  * Math.Abs(flMouseY));
-            else
-                camFirstPerson.transform.Rotate(Vector3.left * Math.Abs(flMouseY));
-        }
+        NormalizeAngles(ref vecViewAngles);
+        ClampAngles(ref vecViewAngles);
 
-        if (flMouseX != 0.0f)
-        {
-            if (flMouseX < 0.0f)
-                camFirstPerson.transform.Rotate(Vector3.down * Math.Abs(flMouseX));
-            else
-                camFirstPerson.transform.Rotate(Vector3.up * Math.Abs(flMouseX));
-        }
+        camFirstPerson.localRotation = Quaternion.Euler(vecViewAngles.x, -vecViewAngles.y, 0);
 
-        // this.transform.Rotate(Vector3.up * flMouseX);
+        UpdateMoveState();
     }
 }
