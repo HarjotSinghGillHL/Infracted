@@ -18,6 +18,12 @@ public class HL_UserInterface : MonoBehaviour
  
     [HideInInspector]
     public int Score = 0;
+
+    [HideInInspector]
+    public bool bNoGravity = false;
+
+    [HideInInspector]
+    public bool bNoPhysics = false;
     void Start()
     {
         KeyStates = gameObject.GetComponent<HL_KeyState>();
@@ -67,6 +73,11 @@ public class HL_UserInterface : MonoBehaviour
 
         Rect rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "Movement keys : WASD", guiStyleIndicators);
+      
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Sprint : Shift", guiStyleIndicators);
 
         Pad += 30;
 
@@ -107,10 +118,19 @@ public class HL_UserInterface : MonoBehaviour
 
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "Collectables : Transparent blue", guiStyleIndicators);
-      
+
+        Pad += 30;
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "(Key P) No Physics : " + (bNoPhysics ? "true" : "false"), guiStyleIndicators);
+     
+        Pad += 30;
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "(Key G) No Gravity : " + (bNoGravity ? "true" : "false"), guiStyleIndicators);
+
         Pad += 30;
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "Score : " + Score, guiStyleIndicators);
+
     }
 
 }
