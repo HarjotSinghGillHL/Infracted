@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -25,44 +26,84 @@ public enum EPlayerBodyState : int
 
 public class HL_PlayerController : MonoBehaviour
 {
+    GameObject GameplayObject;
+    HL_UserInterface UI;
     HL_KeyState KeyStates;
+
     Transform camFirstPerson;
     Transform camThirdPerson;
     Transform modelLocalPlayer;
     Transform modelView;
+    CharacterController characterController;
+
+    Quaternion quatViewModelInitialPosition = Quaternion.identity;
+    EPlayerMoveState moveState = EPlayerMoveState.STATE_IDLE;
+    EPlayerBodyState bodyState = EPlayerBodyState.BODY_STATE_IDLE;
+
+    float flCurrentPlayerSpeed = 0.0f;
+
+    Vector3 vecMouseMoveDelta = Vector3.zero;
+    Vector3 vecKeyboardMoveDelta = Vector3.zero;
+    Vector3 vecViewAngles = Vector3.zero;
+    float flSensitivity = 5.0f;
+
+    EPlayerMoveState moveStateLast = 0;
+    EPlayerBodyState bodyStateLast = 0;
+
+    GameObject AttachedGameObject = null;
+
+    [HideInInspector]
+    public bool bGoToCheckpoint = false;
+    Vector3 vecCheckpoint = Vector3.zero;
+    void OnTriggerEnter(Collider other)
+    {
+        if (AttachedGameObject.CompareTag("MovingPlane"))
+        {
+            AttachedGameObject = other.gameObject;
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("MovingPlane"))
+        {
+            AttachedGameObject = null;
+        }
+    }
+  
+    void RespawnToCheckpoint()
+    {
+        bGoToCheckpoint = true;
+    }
+
     void Start()
     {
-        KeyStates = this.gameObject.GetComponent<HL_KeyState>();
+        KeyStates = gameObject.GetComponent<HL_KeyState>();
+        GameplayObject = GameObject.Find("GameplayObject");
+        UI = GameplayObject.GetComponent<HL_UserInterface>();
+
         modelLocalPlayer = transform.Find("PlayerModel");
         camFirstPerson = modelLocalPlayer.Find("FirstPersonCamera");
         camThirdPerson = modelLocalPlayer.Find("ThirdPersonCamera");
         modelView = camFirstPerson.Find("ViewModel");
+        characterController = modelLocalPlayer.GetComponent<CharacterController>();
         quatViewModelInitialPosition = modelView.transform.localRotation;
-        InitViewModel();
+        vecCheckpoint = modelLocalPlayer.transform.position;
     }
-    void InitViewModel()
+
+    void Update()
     {
+        if (UI.bMenuPaused)
+            return;
+
+        HandleInput();
+        UpdateMoveState();
+        ApplyMovement();
     }
 
-    Quaternion quatViewModelInitialPosition = Quaternion.identity;
-    EPlayerMoveState moveState = 0;
-    EPlayerMoveState moveStateLast = 0;
-
-    EPlayerBodyState bodyState = 0;
-    EPlayerBodyState bodyStateLast = 0;
-
-    float flCurrentPlayerSpeed = 0.0f;
-    float flVerticalViewModelSway = 0.0f;
-    float flHorizontalViewModelSway = 0.0f;
-
-    Vector3 vecMouseMoveDelta = Vector3.zero;
-    Vector3 vecKeyboardMoveDelta = Vector3.zero;
-
-    Vector3 vecViewAngles = Vector3.zero;
     float GetPlayerMoveSpeedModifier()
     {
-        return 1.0f;
-        /*
+    
         if (moveState == (int)EPlayerMoveState.STATE_IDLE)
             return 0.0f;
 
@@ -76,70 +117,68 @@ public class HL_PlayerController : MonoBehaviour
                     {
                         case EPlayerBodyState.BODY_STATE_CROUCH:
                             {
-                                flMoveSpeed = 2.5f;
+                                flMoveSpeed = 1.5f;
                                 break;
                             }
-
-                        case EPlayerBodyState.STATE:
+                        case EPlayerBodyState.BODY_STATE_PRONE:
+                            {
+                                flMoveSpeed = 1.0f;
+                                break;
+                            }
+                        default:
                             {
                                 flMoveSpeed = 2.5f;
                                 break;
                             }
-                        default:
-                            break;
 
                     }
-                    flMoveSpeed = 2.5f;
+
                     break;
                 }
   
             case EPlayerMoveState.STATE_WALK:
                 {
-                    flMoveSpeed = 2.5f;
+
+                    switch (bodyState)
+                    {
+                        case EPlayerBodyState.BODY_STATE_CROUCH:
+                            {
+                                flMoveSpeed = 1.0f;
+                                break;
+                            }
+                        case EPlayerBodyState.BODY_STATE_PRONE:
+                            {
+                                flMoveSpeed = 0.5f;
+                                break;
+                            }
+                        default:
+                            {
+                                flMoveSpeed = 1.5f;
+                                break;
+                            }
+
+                    }
+
                     break;
                 }
             default:
-                break;
+                {
+                    flMoveSpeed = 1.5f;
+                    break;
+                }
 
         }
-        */
-       
-    }
 
+        return flMoveSpeed;
+
+      }
     float GetPlayerMaxMoveSpeed()
     {
         float flSpeedModifier = GetPlayerMoveSpeedModifier();
 
-            float MaxPlayerSpeed = 5.0f;   //MaxPlayerSpeed will be adjusted according to situations
+        float MaxPlayerSpeed = 5.0f;   //MaxPlayerSpeed will be adjusted according to situations
 
-            return flSpeedModifier * MaxPlayerSpeed;
-    }
-    public static void ClampAngles(ref Vector3 vecAngles)
-    {
-        if (vecAngles.x > 89.0f)
-            vecAngles.x = 89.0f;
-        else if (vecAngles.x < -89.0f)
-            vecAngles.x = -89.0f;
-
-        if (vecAngles.y > 180.0f)
-            vecAngles.y = 180.0f;
-        else if (vecAngles.y < -180.0f)
-            vecAngles.y = -180.0f;
-
-    }
-
-    public static void NormalizeAngle(ref float flAngle)
-    {
-        if (flAngle > 180.0f)
-            flAngle = -180.0f;
-        else if (flAngle < -180.0f)
-            flAngle = 180.0f;
-    }
-    public static void NormalizeAngles(ref Vector3 vecAngles)
-    {
-        NormalizeAngle(ref vecAngles.x);
-        NormalizeAngle(ref vecAngles.y);
-
+        return flSpeedModifier * MaxPlayerSpeed;
     }
 
     bool bSprintingKeyState = false;
@@ -191,96 +230,73 @@ public class HL_PlayerController : MonoBehaviour
 
         flCurrentPlayerSpeed = GetPlayerMaxMoveSpeed();
 
-       // Debug.Log("moveState : " + moveState+ " bodyState : " + bodyState + " currentPlayerSPeed : " + flCurrentPlayerSpeed);
+        // Debug.Log("moveState : " + moveState+ " bodyState : " + bodyState + " currentPlayerSPeed : " + flCurrentPlayerSpeed);
     }
 
-    float flSensitivity = 5.0f;
-
-    void Update()
+    void HandleInput()
     {
-        vecMouseMoveDelta.x = Input.GetAxis("Mouse X") * flSensitivity;
-        vecMouseMoveDelta.y = Input.GetAxis("Mouse Y") * flSensitivity;
+        vecMouseMoveDelta.x = Input.GetAxisRaw("Mouse X") * flSensitivity;
+        vecMouseMoveDelta.y = Input.GetAxisRaw("Mouse Y") * flSensitivity;
 
-        vecKeyboardMoveDelta.y = Input.GetAxis("Vertical");
-        vecKeyboardMoveDelta.x = Input.GetAxis("Horizontal");
-       
-        vecViewAngles.x -= vecMouseMoveDelta.y * 1.0f;
-        vecViewAngles.y -= vecMouseMoveDelta.x * 1.0f;
-
-        NormalizeAngles(ref vecViewAngles);
-        ClampAngles(ref vecViewAngles);
-
-       // transform.localRotation = Quaternion.Euler(0, -vecViewAngles.y, 0);
-         camFirstPerson.localRotation = Quaternion.Euler(vecViewAngles.x,0, 0);
-         modelLocalPlayer.localRotation = Quaternion.Euler(0, -vecViewAngles.y, 0);
-
-        UpdateMoveState();
-
-        if (vecKeyboardMoveDelta.y != 0)
-            modelLocalPlayer.Translate(Vector3.forward * ((vecKeyboardMoveDelta.y * Time.deltaTime)) * flCurrentPlayerSpeed);
-       
-        if (vecKeyboardMoveDelta.x != 0)
-            modelLocalPlayer.Translate(Vector3.right * ((vecKeyboardMoveDelta.x * Time.deltaTime) * flCurrentPlayerSpeed));
-
-        if (vecMouseMoveDelta.x != 0.0f)
-        {
-            flHorizontalViewModelSway += (vecMouseMoveDelta.x < 0 ? -1.0f : 1.0f) *  ((Time.deltaTime * flSensitivity * 2.0f));
-            flHorizontalViewModelSway = Math.Clamp(flHorizontalViewModelSway,-2.0f,2.7f);
-        }
-        else
-        {
-            if (flHorizontalViewModelSway < 0.0f)
-            {
-                flHorizontalViewModelSway += (Time.deltaTime * 3.0f);
-            
-                if (flHorizontalViewModelSway > 0.0f)
-                    flHorizontalViewModelSway = 0.0f;
-
-            }
-            else if  (flHorizontalViewModelSway > 0.0f)
-            {
-                    flHorizontalViewModelSway -= (Time.deltaTime * 3.0f);
-              
-                if (flHorizontalViewModelSway < 0.0f)
-                    flHorizontalViewModelSway = 0.0f;
-            }
-
-        }
-
-        if (vecMouseMoveDelta.y != 0.0f)
-        {
-            flVerticalViewModelSway += (vecMouseMoveDelta.y < 0 ? -1.0f : 1.0f) * ((Time.deltaTime * flSensitivity * 0.2f));
-            flVerticalViewModelSway = Math.Clamp(flVerticalViewModelSway, -27.0f, 0.4f);
-        }
-        else
-        {
-            if (flVerticalViewModelSway < 0.0f)
-            {
-                flVerticalViewModelSway += (Time.deltaTime * 0.4f);
-
-                if (flVerticalViewModelSway > 0.0f)
-                    flVerticalViewModelSway = 0.0f;
-
-            }
-            else if (flVerticalViewModelSway > 0.0f)
-            {
-                flVerticalViewModelSway -= (Time.deltaTime * 0.4f);
-
-                if (flVerticalViewModelSway < 0.0f)
-                    flVerticalViewModelSway = 0.0f;
-            }
-
-        }
-
-        Quaternion quatLocRotation = quatViewModelInitialPosition;
-
-        if (flHorizontalViewModelSway != 0.0f)
-        {
-            quatLocRotation.y += flHorizontalViewModelSway;
-          //  quatLocRotation = Quaternion.Euler(0.0f,flHorizontalViewModelSway,0.0f);
-        }
-
-        modelView.localRotation = quatLocRotation;
+        vecKeyboardMoveDelta.y = Input.GetAxisRaw("Vertical");
+        vecKeyboardMoveDelta.x = Input.GetAxisRaw("Horizontal");
 
     }
+
+    void ApplyMovement()
+    {
+        vecViewAngles.x -= vecMouseMoveDelta.y;
+        vecViewAngles.y += vecMouseMoveDelta.x;
+
+        vecViewAngles.x = Mathf.Clamp(vecViewAngles.x, -90.0f, 90.0f);
+
+        camFirstPerson.localRotation = Quaternion.Euler(vecViewAngles.x, 0, 0);
+        modelLocalPlayer.localRotation = Quaternion.Euler(0, vecViewAngles.y, 0);
+
+        Vector3 moveDirection = modelLocalPlayer.transform.forward * vecKeyboardMoveDelta.y + modelLocalPlayer.transform.right * vecKeyboardMoveDelta.x;
+        moveDirection *= flCurrentPlayerSpeed * Time.deltaTime;
+
+        moveDirection.y += Physics.gravity.y * Time.deltaTime;
+        characterController.Move(moveDirection);
+
+        if (KeyStates.CheckKeyState(KeyCode.T, EKeyQueryMode.KEYQUERY_SINGLEPRESS))
+        {
+            TeleportForward();
+        }
+
+        if (bGoToCheckpoint)
+        {
+            characterController.enabled = false;
+            modelLocalPlayer.transform.position = vecCheckpoint;
+
+            characterController.enabled = true;
+
+            bGoToCheckpoint = false;
+        }
+    }
+
+
+    public float maxTeleportDistance = 5f; 
+
+    void TeleportForward()
+    {
+        Vector3 startPosition = modelLocalPlayer.transform.position;
+        Vector3 direction = modelLocalPlayer.transform.forward;
+        float teleportDistance = maxTeleportDistance;
+
+        RaycastHit hit;
+        if (Physics.Raycast(startPosition, direction, out hit, maxTeleportDistance))
+        {
+            teleportDistance = hit.distance - 0.1f;
+        }
+
+        Vector3 newPosition = startPosition + direction * teleportDistance;
+
+        characterController.enabled = false;
+        modelLocalPlayer.transform.position = newPosition;
+
+        characterController.enabled = true; 
+    }
+
+
 }
