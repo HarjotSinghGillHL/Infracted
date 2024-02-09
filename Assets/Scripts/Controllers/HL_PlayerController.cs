@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public enum EPlayerMoveState : int
 {
@@ -47,6 +46,8 @@ public class HL_PlayerController : MonoBehaviour
     Vector3 vecViewAngles = Vector3.zero;
     float flSensitivity = 5.0f;
 
+    public float jumpHeight = 2.0f;
+
     EPlayerMoveState moveStateLast = 0;
     EPlayerBodyState bodyStateLast = 0;
 
@@ -75,7 +76,10 @@ public class HL_PlayerController : MonoBehaviour
     {
         bGoToCheckpoint = true;
     }
-
+    void Awake()
+    {
+        //bulletPrefab = Resources.Load<GameObject>("bulletPrefab");
+    }
     void Start()
     {
         KeyStates = gameObject.GetComponent<HL_KeyState>();
@@ -89,6 +93,7 @@ public class HL_PlayerController : MonoBehaviour
         characterController = modelLocalPlayer.GetComponent<CharacterController>();
         quatViewModelInitialPosition = modelView.transform.localRotation;
         vecCheckpoint = modelLocalPlayer.transform.position;
+
     }
 
     void Update()
@@ -99,6 +104,7 @@ public class HL_PlayerController : MonoBehaviour
         HandleInput();
         UpdateMoveState();
         ApplyMovement();
+        HandleFireStage();
     }
 
     float GetPlayerMoveSpeedModifier()
@@ -243,8 +249,18 @@ public class HL_PlayerController : MonoBehaviour
 
     }
 
+    private bool isGrounded;
+
+    private float verticalSpeed = 0.0f;
     void ApplyMovement()
     {
+        isGrounded = characterController.isGrounded;
+        if (isGrounded && verticalSpeed < 0)
+        {
+            verticalSpeed = -2f; // A small downward force to ensure the character stays grounded.
+        }
+
+
         vecViewAngles.x -= vecMouseMoveDelta.y;
         vecViewAngles.y += vecMouseMoveDelta.x;
 
@@ -255,8 +271,16 @@ public class HL_PlayerController : MonoBehaviour
 
         Vector3 moveDirection = modelLocalPlayer.transform.forward * vecKeyboardMoveDelta.y + modelLocalPlayer.transform.right * vecKeyboardMoveDelta.x;
         moveDirection *= flCurrentPlayerSpeed * Time.deltaTime;
+      
+        verticalSpeed += Physics.gravity.y * Time.deltaTime;
 
-        moveDirection.y += Physics.gravity.y * Time.deltaTime;
+        if (bJumpKeyState && isGrounded)
+        {
+            verticalSpeed = Mathf.Sqrt(2 * jumpHeight * -Physics.gravity.y); 
+        }
+
+        moveDirection.y = verticalSpeed * Time.deltaTime; // Apply vertical speed
+
         characterController.Move(moveDirection);
 
         if (KeyStates.CheckKeyState(KeyCode.T, EKeyQueryMode.KEYQUERY_SINGLEPRESS))
@@ -297,6 +321,24 @@ public class HL_PlayerController : MonoBehaviour
 
         characterController.enabled = true; 
     }
+
+    void HandleFireStage()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 spawnPosition = camFirstPerson.transform.position + camFirstPerson.transform.forward;
+
+            Quaternion spawnRotation = camFirstPerson.transform.rotation;
+
+            Instantiate(bulletPrefab, spawnPosition, spawnRotation);
+
+            Debug.Log("Left mouse button clicked.");
+        }
+
+    }
+
+    public GameObject bulletPrefab;
+
 
 
 }

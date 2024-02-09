@@ -12,6 +12,9 @@ public class HL_UserInterface : MonoBehaviour
    
     [HideInInspector]
     public float flTimeScaleToAdjust = 0.0f;
+
+    GUIStyle guiStylePaused = null;
+    GUIStyle guiStyleIndicators = null;
     void Start()
     {
         KeyStates = gameObject.GetComponent<HL_KeyState>();
@@ -37,15 +40,51 @@ public class HL_UserInterface : MonoBehaviour
 
     void OnGUI()
     {
+        if (guiStylePaused == null)
+        {
+            guiStylePaused = new GUIStyle(GUI.skin.label);
+            guiStylePaused.fontSize = 60;
+            guiStylePaused.alignment = TextAnchor.MiddleCenter;
+
+        }
+
+        if (guiStyleIndicators == null)
+        {
+            guiStyleIndicators = new GUIStyle(GUI.skin.label);
+            guiStyleIndicators.fontSize = 20;
+        }
+
         if (bMenuPaused)
         {
-            GUIStyle guiStyle = new GUIStyle(GUI.skin.label);
-            guiStyle.fontSize = 60; 
-            guiStyle.alignment = TextAnchor.MiddleCenter;
-
-            Rect rect = new Rect(Screen.width / 2 - 100, Screen.height / 2 - 25, 300, 100);
-            GUI.Label(rect, "PAUSED", guiStyle);
+            Rect rect_ = new Rect(Screen.width / 2 - 100, Screen.height / 2 - 25, 300, 100);
+            GUI.Label(rect_, "PAUSED", guiStylePaused);
         }
+
+        int Pad = 10;
+
+        Rect rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Movement keys : WASD", guiStyleIndicators);
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Jump : Space", guiStyleIndicators);
+       
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Fire : LMB", guiStyleIndicators);
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Teleport ability : T", guiStyleIndicators);
+        
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Pause : Escape", guiStyleIndicators);
+       
     }
 
 }
