@@ -6,9 +6,8 @@ public class HL_KillBox : MonoBehaviour
 {
     public GameObject modelLocalPlayer = null;
     public GameObject LocalPlayer = null;
-    CharacterController localCharacterController = null;
+    public HL_PlayerController localController = null;
 
-    HL_PlayerController localController;
     void Start()
     {
         if (LocalPlayer == null)
@@ -19,7 +18,7 @@ public class HL_KillBox : MonoBehaviour
 
         if (modelLocalPlayer != null)
         {
-            localCharacterController = modelLocalPlayer.GetComponent<CharacterController>();
+            if (localController == null)
             localController = LocalPlayer.GetComponent<HL_PlayerController>();
         }
     }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class HL_UserInterface : MonoBehaviour
 {
     // Start is called before the first frame update
-    HL_KeyState KeyStates;
+    public HL_KeyState KeyStates = null;
 
     [HideInInspector]
     public bool bMenuPaused = false;
@@ -26,6 +26,7 @@ public class HL_UserInterface : MonoBehaviour
     public bool bNoPhysics = false;
     void Start()
     {
+        if (KeyStates ==null)
         KeyStates = gameObject.GetComponent<HL_KeyState>();
         flTimeScaleToAdjust = Time.timeScale;
     }

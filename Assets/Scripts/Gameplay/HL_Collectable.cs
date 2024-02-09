@@ -7,7 +7,7 @@ public class HL_Collectable : MonoBehaviour
     public GameObject LocalPlayer = null;
     public GameObject modelLocalPlayer = null;
 
-    private HL_PlayerController localController = null;
+    public HL_PlayerController localController = null;
 
     GameObject GameplayObject;
     HL_UserInterface UI;
@@ -18,8 +18,9 @@ public class HL_Collectable : MonoBehaviour
 
         if (modelLocalPlayer == null)
             modelLocalPlayer = LocalPlayer.transform.Find("PlayerModel").gameObject;
-
-        localController = LocalPlayer.GetComponent<HL_PlayerController>();
+        
+        if (localController == null)
+            localController = LocalPlayer.GetComponent<HL_PlayerController>();
 
         GameplayObject = GameObject.Find("GameplayObject");
         UI = GameplayObject.GetComponent<HL_UserInterface>();

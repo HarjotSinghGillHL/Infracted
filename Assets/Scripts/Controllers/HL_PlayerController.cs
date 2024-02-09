@@ -25,15 +25,15 @@ public enum EPlayerBodyState : int
 
 public class HL_PlayerController : MonoBehaviour
 {
-    GameObject GameplayObject;
-    HL_UserInterface UI;
-    HL_KeyState KeyStates;
+    public GameObject GameplayObject;
+    public HL_UserInterface UI;
+    public HL_KeyState KeyStates;
 
-    Transform camFirstPerson;
-    Transform camThirdPerson;
-    Transform modelLocalPlayer;
-    Transform modelView;
-    CharacterController characterController;
+    public Transform camFirstPerson;
+    public Transform camThirdPerson;
+    public Transform modelLocalPlayer;
+    public Transform modelView;
+    public CharacterController characterController;
 
     Quaternion quatViewModelInitialPosition = Quaternion.identity;
     EPlayerMoveState moveState = EPlayerMoveState.STATE_IDLE;
@@ -87,15 +87,30 @@ public class HL_PlayerController : MonoBehaviour
     }
     void Start()
     {
+        if (KeyStates == null)
         KeyStates = gameObject.GetComponent<HL_KeyState>();
-        GameplayObject = GameObject.Find("GameplayObject");
-        UI = GameplayObject.GetComponent<HL_UserInterface>();
+      
+        if (GameplayObject == null)
+            GameplayObject = GameObject.Find("GameplayObject");
+       
+        if (UI == null)
+            UI = GameplayObject.GetComponent<HL_UserInterface>();
 
-        modelLocalPlayer = transform.Find("PlayerModel");
-        camFirstPerson = modelLocalPlayer.Find("FirstPersonCamera");
-        camThirdPerson = modelLocalPlayer.Find("ThirdPersonCamera");
-        modelView = camFirstPerson.Find("ViewModel");
-        characterController = modelLocalPlayer.GetComponent<CharacterController>();
+        if (modelLocalPlayer == null)
+            modelLocalPlayer = transform.Find("PlayerModel");
+      
+        if (camFirstPerson == null)
+            camFirstPerson = modelLocalPlayer.Find("FirstPersonCamera");
+       
+        if (camThirdPerson == null)
+            camThirdPerson = modelLocalPlayer.Find("ThirdPersonCamera");
+      
+        if (modelView == null)
+            modelView = camFirstPerson.Find("ViewModel");
+
+        if (characterController == null)
+            characterController = modelLocalPlayer.GetComponent<CharacterController>();
+
         quatViewModelInitialPosition = modelView.transform.localRotation;
         vecCheckpoint = modelLocalPlayer.transform.position;
 

@@ -5,12 +5,14 @@ using UnityEngine;
 public class HL_EngineController : MonoBehaviour
 {
     HL_KeyState KeyStates;
-    HL_UserInterface UI;
+    public HL_UserInterface UI;
     // Start is called before the first frame update
     float flOldTimeScale = 0;
     void Start()
     {
-        UI = gameObject.GetComponent<HL_UserInterface>();
+        if (UI == null)
+           UI = gameObject.GetComponent<HL_UserInterface>();
+
         KeyStates = gameObject.GetComponent<HL_KeyState>();
         flOldTimeScale = Time.timeScale;
 

@@ -6,8 +6,7 @@ public class HL_Checkpoint : MonoBehaviour
 {
     public GameObject LocalPlayer = null;
     public GameObject modelLocalPlayer = null;
-
-    private HL_PlayerController localController = null;
+    public HL_PlayerController localController = null;
     void Start()
     {
         if (LocalPlayer == null)
@@ -15,8 +14,9 @@ public class HL_Checkpoint : MonoBehaviour
 
         if (modelLocalPlayer == null)
             modelLocalPlayer = LocalPlayer.transform.Find("PlayerModel").gameObject;
-
-        localController = LocalPlayer.GetComponent<HL_PlayerController>();
+      
+        if (localController == null)
+            localController = LocalPlayer.GetComponent<HL_PlayerController>();
     }
 
 
