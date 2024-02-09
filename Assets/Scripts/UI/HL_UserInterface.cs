@@ -15,6 +15,9 @@ public class HL_UserInterface : MonoBehaviour
 
     GUIStyle guiStylePaused = null;
     GUIStyle guiStyleIndicators = null;
+ 
+    [HideInInspector]
+    public int Score = 0;
     void Start()
     {
         KeyStates = gameObject.GetComponent<HL_KeyState>();
@@ -84,7 +87,30 @@ public class HL_UserInterface : MonoBehaviour
 
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "Pause : Escape", guiStyleIndicators);
-       
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Triggers : Transparent Purple", guiStyleIndicators);
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Killboxes : Transparent dark red", guiStyleIndicators);
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Checkpoints : Transparent yellow", guiStyleIndicators);
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Collectables : Transparent blue", guiStyleIndicators);
+      
+        Pad += 30;
+        rect = new Rect(10, Pad, 300, 30);
+        GUI.Label(rect, "Score : " + Score, guiStyleIndicators);
     }
 
 }

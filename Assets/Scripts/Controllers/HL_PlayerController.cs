@@ -55,6 +55,7 @@ public class HL_PlayerController : MonoBehaviour
 
     [HideInInspector]
     public bool bGoToCheckpoint = false;
+
     Vector3 vecCheckpoint = Vector3.zero;
     void OnTriggerEnter(Collider other)
     {
@@ -72,6 +73,10 @@ public class HL_PlayerController : MonoBehaviour
         }
     }
   
+    public void SetCheckpointLocation(Vector3 _vecCheckpoint)
+    {
+        vecCheckpoint = _vecCheckpoint;
+    }
     void RespawnToCheckpoint()
     {
         bGoToCheckpoint = true;
