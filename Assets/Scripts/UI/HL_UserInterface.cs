@@ -24,6 +24,8 @@ public class HL_UserInterface : MonoBehaviour
 
     [HideInInspector]
     public bool bNoPhysics = false;
+
+    public string State = "IDLE";
     void Start()
     {
         if (KeyStates ==null)
@@ -102,6 +104,7 @@ public class HL_UserInterface : MonoBehaviour
 
         Pad += 30;
 
+        /*
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "Triggers : Transparent Purple", guiStyleIndicators);
 
@@ -119,8 +122,9 @@ public class HL_UserInterface : MonoBehaviour
 
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "Collectables : Transparent blue", guiStyleIndicators);
+        
+        Pad += 30;*/
 
-        Pad += 30;
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "(Key P) No Physics : " + (bNoPhysics ? "true" : "false"), guiStyleIndicators);
      
@@ -128,10 +132,18 @@ public class HL_UserInterface : MonoBehaviour
         rect = new Rect(10, Pad, 300, 30);
         GUI.Label(rect, "(Key G) No Gravity : " + (bNoGravity ? "true" : "false"), guiStyleIndicators);
 
-        Pad += 30;
-        rect = new Rect(10, Pad, 300, 30);
-        GUI.Label(rect, "Score : " + Score, guiStyleIndicators);
+       // Pad += 30;
+       // rect = new Rect(10, Pad, 300, 30);
+       // GUI.Label(rect, "Score : " + Score, guiStyleIndicators);
 
+        Pad += 30;
+        rect = new Rect(10, Pad, 400, 30);
+        GUI.Label(rect, "Enemy State : " + State, guiStyleIndicators);
+
+        Pad += 30;
+
+        rect = new Rect(10, Pad, 900, 30);
+        GUI.Label(rect, "Enemy Visibility Range (60 Degrees)", guiStyleIndicators);
     }
 
 }
