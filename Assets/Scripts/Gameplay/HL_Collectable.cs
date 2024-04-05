@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 public class HL_Collectable : MonoBehaviour
 {
@@ -9,10 +10,13 @@ public class HL_Collectable : MonoBehaviour
 
     public HL_PlayerController localController = null;
 
+    public AudioSource audioSource = null;
+
     GameObject GameplayObject;
     HL_UserInterface UI;
     void Start()
     {
+
         if (LocalPlayer == null)
             LocalPlayer = GameObject.Find("LocalPlayer");
 
@@ -32,6 +36,7 @@ public class HL_Collectable : MonoBehaviour
         if (collision.gameObject == modelLocalPlayer)
         {
             UI.Score += 1;
+            audioSource.Play();
             GameObject.Destroy(gameObject);
         }
     }

@@ -7,6 +7,8 @@ public class HL_Checkpoint : MonoBehaviour
     public GameObject LocalPlayer = null;
     public GameObject modelLocalPlayer = null;
     public HL_PlayerController localController = null;
+
+    public AudioSource audioSource;
     void Start()
     {
         if (LocalPlayer == null)
@@ -24,6 +26,7 @@ public class HL_Checkpoint : MonoBehaviour
     {
         if (collision.gameObject == modelLocalPlayer)
         {
+            audioSource.Play();
             localController.SetCheckpointLocation(transform.position);
         }
     }

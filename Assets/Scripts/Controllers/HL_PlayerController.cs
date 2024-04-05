@@ -322,6 +322,12 @@ public class HL_PlayerController : MonoBehaviour
 
     public float maxTeleportDistance = 5f; 
 
+    public void TeleportAtTargetLocation(Vector3 vecTargetLocation)
+    {
+        characterController.enabled = false;
+        modelLocalPlayer.transform.position = vecTargetLocation;
+        characterController.enabled = true;
+    }
     void TeleportForward()
     {
         Vector3 startPosition = modelLocalPlayer.transform.position;
